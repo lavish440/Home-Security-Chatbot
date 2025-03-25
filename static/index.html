@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Security Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> Home Security Assistant</h1>
+            <p>Your AI-powered home security companion</p>
+        </header>
+        
+        <main>
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">
+                        <div class="message-content">
+                            Hello! I'm your Home Security Assistant. How can I help you today?
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-container">
+                    <form id="chatForm">
+                        <input type="text" id="userInput" placeholder="Type your message here..." autocomplete="off">
+                        <button type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Gemini AI</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

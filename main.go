@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
@@ -17,9 +20,19 @@ func main() {
 		fmt.Errorf("Error loading .env file: %w", err)
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "Home Security Assistant",
+	})
 
-	app.Post("/chat", handleChat)
+	// Middleware
+	app.Use(logger.New())
+	app.Use(recover.New())
+
+	// Serve static files
+	app.Static("/", "./static")
+
+	// API endpoints
+	app.Post("/api/chat", handleChat)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -69,7 +82,11 @@ func generateGeminiResponse(userInput string) (string, error) {
 
 	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
 		if text, ok := resp.Candidates[0].Content.Parts[0].(genai.Text); ok {
-			return string(text), nil
+			ret := string(text)
+			ret = strings.ReplaceAll(ret, "***", "\n")
+			ret = strings.ReplaceAll(ret, "**", "\n")
+			ret = strings.ReplaceAll(ret, "*", "\n")
+			return ret, nil
 		}
 	}
 	return "No response generated.", fmt.Errorf("no valid candidates found in response")
