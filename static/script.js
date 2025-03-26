@@ -3,11 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
 
-    marked.setOptions({
-        sanitize: true,
-        breaks: true,
-        gfm: true
-    });
 
     function addMessage(content, isUser = false) {
         const messageDiv = document.createElement('div');
