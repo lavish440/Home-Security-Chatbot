@@ -3,14 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
 
-    // Configure marked options for security
     marked.setOptions({
         sanitize: true,
         breaks: true,
         gfm: true
     });
 
-    // Function to add a message to the chat
     function addMessage(content, isUser = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user' : 'system'}`;
@@ -18,24 +16,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
         
-        // Use marked for Markdown rendering
         messageContent.innerHTML = marked.parse(content);
         
         messageDiv.appendChild(messageContent);
         chatMessages.appendChild(messageDiv);
         
-        // Scroll to the bottom of the chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Function to handle the chat submission
     async function handleSubmit(e) {
         e.preventDefault();
         
         const message = userInput.value.trim();
         if (!message) return;
 
-        // Add user message to chat
         addMessage(message, true);
         userInput.value = '';
 
@@ -60,10 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Event listeners
     chatForm.addEventListener('submit', handleSubmit);
 
-    // Handle Enter key press
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -71,6 +63,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Focus input on load
     userInput.focus();
 }); 

@@ -30,14 +30,11 @@ func main() {
 		AppName: "Home Security Assistant",
 	})
 
-	// Middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
 
-	// Serve static files
 	app.Static("/", "./static")
 
-	// API endpoints
 	app.Post("/api/chat", handleChat)
 
 	port, ok := os.LookupEnv("PORT")

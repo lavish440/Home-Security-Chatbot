@@ -86,13 +86,7 @@ header p {
 
 .message-content {
     word-wrap: break-word;
-    white-space: pre-wrap;
     line-height: 1.5;
-}
-
-/* Markdown Styles */
-.message-content p {
-    margin-bottom: 0.5rem;
 }
 
 .message-content h1,
@@ -220,7 +214,6 @@ footer {
     }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
