@@ -4,11 +4,18 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
+)
+
+var (
+	chatSessions = sync.Map{}
+	client       *genai.Client
+	clientErr    error
 )
 
 func main() {
@@ -21,8 +28,8 @@ func main() {
 
 	app.Post("/chat", handleChat)
 
-	port := os.Getenv("PORT")
-	if port == "" {
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
 		port = "3000"
 	}
 
@@ -37,40 +44,81 @@ func handleChat(c *fiber.Ctx) error {
 	req := new(Request)
 
 	if err := c.BodyParser(req); err != nil {
+		fmt.Errorf("Error parsing request body: %w", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
-	response, err := generateGeminiResponse(req.Message)
+	ip := c.IP()
+
+	response, err := generateGeminiResponse(ip, req.Message)
 	if err != nil {
+		fmt.Errorf("Error generating Gemini response: %w", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"response": response})
 }
 
-func generateGeminiResponse(userInput string) (string, error) {
-	apiKey := os.Getenv("GEMINI_API_KEY")
-	if apiKey == "" {
+func generateGeminiResponse(ip, userInput string) (string, error) {
+	apiKey, ok := os.LookupEnv("GEMINI_API_KEY")
+	if !ok {
 		return "", fmt.Errorf("GEMINI_API_KEY environment variable not set")
 	}
 
 	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
-	if err != nil {
-		return "", fmt.Errorf("Error creating AI client: %w", err)
+
+	if client == nil && clientErr == nil {
+		client, clientErr = genai.NewClient(ctx, option.WithAPIKey(apiKey))
+		if clientErr != nil {
+			return "", fmt.Errorf("Error creating AI client: %w", clientErr)
+		}
 	}
-	defer client.Close()
+
+	if clientErr != nil {
+		return "", fmt.Errorf("Error creating AI client: %w", clientErr)
+	}
 
 	model := client.GenerativeModel("gemini-2.0-flash")
-	resp, err := model.GenerateContent(ctx, genai.Text(userInput))
+
+	model.SetTemperature(1)
+	model.SetTopK(40)
+	model.SetTopP(0.95)
+	model.SetMaxOutputTokens(8192)
+	model.ResponseMIMEType = "text/plain"
+	model.SystemInstruction = &genai.Content{Parts: []genai.Part{genai.Text("You are a specialized AI assistant for home security systems. Answer the following question about home security. If the question is not related to home security, politely decline to answer and explain that you only answer questions about home security systems, cameras, alarms, sensors, etc. Keep responses concise, informative, and helpful for home owners. If the user asks you to control a home security device, behave as if you have done it.")}}
+
+	session, ok := chatSessions.Load(ip)
+	if !ok {
+		newSession := model.StartChat()
+		newSession.History = []*genai.Content{}
+		session = newSession
+		chatSessions.Store(ip, newSession)
+	}
+
+	cs := session.(*genai.ChatSession)
+
+	resp, err := cs.SendMessage(ctx, genai.Text(userInput))
 	if err != nil {
-		return "", fmt.Errorf("Error generating content: %w", err)
+		fmt.Errorf("Error sending message to Gemini: %w", err)
+		return "", fmt.Errorf("Error sending message: %w", err)
 	}
 
 	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
 		if text, ok := resp.Candidates[0].Content.Parts[0].(genai.Text); ok {
-			return string(text), nil
+			response := string(text)
+
+			cs.History = append(cs.History, &genai.Content{
+				Role:  "user",
+				Parts: []genai.Part{genai.Text(userInput)},
+			})
+			cs.History = append(cs.History, &genai.Content{
+				Role:  "model",
+				Parts: []genai.Part{genai.Text(response)},
+			})
+
+			return response, nil
 		}
 	}
+
 	return "No response generated.", fmt.Errorf("no valid candidates found in response")
 }
