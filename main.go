@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
@@ -24,9 +26,16 @@ func main() {
 		fmt.Errorf("Error loading .env file: %w", err)
 	}
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "Home Security Assistant",
+	})
 
-	app.Post("/chat", handleChat)
+	app.Use(logger.New())
+	app.Use(recover.New())
+
+	app.Static("/", "./static")
+
+	app.Post("/api/chat", handleChat)
 
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
