@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -82,11 +81,7 @@ func generateGeminiResponse(userInput string) (string, error) {
 
 	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
 		if text, ok := resp.Candidates[0].Content.Parts[0].(genai.Text); ok {
-			ret := string(text)
-			ret = strings.ReplaceAll(ret, "***", "\n")
-			ret = strings.ReplaceAll(ret, "**", "\n")
-			ret = strings.ReplaceAll(ret, "*", "\n")
-			return ret, nil
+			return string(text), nil
 		}
 	}
 	return "No response generated.", fmt.Errorf("no valid candidates found in response")

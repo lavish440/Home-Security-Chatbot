@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('userInput');
     const chatMessages = document.getElementById('chatMessages');
 
+    // Configure marked options for security
+    marked.setOptions({
+        sanitize: true,
+        breaks: true,
+        gfm: true
+    });
+
     // Function to add a message to the chat
     function addMessage(content, isUser = false) {
         const messageDiv = document.createElement('div');
@@ -10,8 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
-        // Replace newlines with <br> tags and preserve whitespace
-        messageContent.innerHTML = content.replace(/\n/g, '<br>');
+        
+        // Use marked for Markdown rendering
+        messageContent.innerHTML = marked.parse(content);
         
         messageDiv.appendChild(messageContent);
         chatMessages.appendChild(messageDiv);

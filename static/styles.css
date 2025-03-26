@@ -90,6 +90,80 @@ header p {
     line-height: 1.5;
 }
 
+/* Markdown Styles */
+.message-content p {
+    margin-bottom: 0.5rem;
+}
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4,
+.message-content h5,
+.message-content h6 {
+    margin: 1rem 0 0.5rem 0;
+    color: inherit;
+}
+
+.message-content ul,
+.message-content ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.message-content li {
+    margin: 0.25rem 0;
+}
+
+.message-content code {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.message-content pre {
+    background-color: rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.message-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.message-content blockquote {
+    border-left: 4px solid rgba(0, 0, 0, 0.2);
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+    color: inherit;
+}
+
+.message-content a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.message-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+.message-content th,
+.message-content td {
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.message-content th {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .chat-input-container {
     padding: 1rem;
     background-color: var(--message-bg);
