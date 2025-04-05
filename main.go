@@ -29,7 +29,10 @@ func main() {
 	}
 
 	app := fiber.New(fiber.Config{
-		AppName: "Home Security Assistant",
+		AppName:                 "Home Security Assistant",
+		EnableTrustedProxyCheck: true,
+		ProxyHeader:             fiber.HeaderXForwardedFor,
+		TrustedProxies:          []string{os.Getenv("REVERSE_PROXY_IP")},
 	})
 
 	allowedOrigins, ok := os.LookupEnv("ORIGIN")
