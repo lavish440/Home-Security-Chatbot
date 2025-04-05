@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/generative-ai-go/genai"
@@ -31,6 +32,16 @@ func main() {
 	})
 
 	app.Use(logger.New())
+	allowedOrigins, ok := os.LookupEnv("ORIGIN")
+	if !ok {
+		log.Println("Warning: ORIGIN environment variable not set. CORS might be too permissive.")
+	}
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: allowedOrigins,
+		AllowMethods: "GET,POST",
+	}))
+
 	app.Use(recover.New())
 
 	app.Static("/", "./static")
