@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
@@ -22,9 +23,8 @@ var (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Errorf("Error loading .env file: %w", err)
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Error loading .env file: %v", err)
 	}
 
 	app := fiber.New(fiber.Config{
@@ -56,6 +56,7 @@ func main() {
 		port = "3000"
 	}
 
+	log.Printf("Starting server on port %s", port)
 	app.Listen(":" + port)
 }
 
@@ -67,7 +68,7 @@ func handleChat(c *fiber.Ctx) error {
 	req := new(Request)
 
 	if err := c.BodyParser(req); err != nil {
-		fmt.Errorf("Error parsing request body: %w", err)
+		log.Printf("Error parsing request body from %s: %v", c.IP(), err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
 	}
 
@@ -75,7 +76,7 @@ func handleChat(c *fiber.Ctx) error {
 
 	response, err := generateGeminiResponse(ip, req.Message)
 	if err != nil {
-		fmt.Errorf("Error generating Gemini response: %w", err)
+		log.Printf("Error generating Gemini response for %s: %v", ip, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -122,7 +123,7 @@ func generateGeminiResponse(ip, userInput string) (string, error) {
 
 	resp, err := cs.SendMessage(ctx, genai.Text(userInput))
 	if err != nil {
-		fmt.Errorf("Error sending message to Gemini: %w", err)
+		log.Printf("Error sending message to Gemini: %v", err)
 		return "", fmt.Errorf("Error sending message: %w", err)
 	}
 
