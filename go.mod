@@ -3,6 +3,7 @@ module github.com/lavish440/Home-Security-Chatbot
 go 1.24.1
 
 require (
+	github.com/goccy/go-json v0.10.5
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/google/generative-ai-go v0.19.0
 	github.com/joho/godotenv v1.5.1

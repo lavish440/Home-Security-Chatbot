@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -30,6 +31,8 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		AppName:                 "Home Security Assistant",
+		JSONEncoder:             json.Marshal,
+		JSONDecoder:             json.Unmarshal,
 		EnableTrustedProxyCheck: true,
 		ProxyHeader:             fiber.HeaderXForwardedFor,
 		TrustedProxies:          []string{os.Getenv("REVERSE_PROXY_IP")},
