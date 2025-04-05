@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,11 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
+
+type ChatSession struct {
+	Session  *genai.ChatSession
+	LastUsed time.Time
+}
 
 var (
 	chatSessions = sync.Map{}
@@ -61,6 +67,8 @@ func main() {
 	app.Static("/", "./static")
 
 	app.Post("/api/chat", handleChat)
+
+	go cleanupSessions()
 
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
@@ -122,17 +130,11 @@ func generateGeminiResponse(ip, userInput string) (string, error) {
 	model.ResponseMIMEType = "text/plain"
 	model.SystemInstruction = &genai.Content{Parts: []genai.Part{genai.Text("You are a specialized AI assistant for home security systems. Answer the following question about home security. If the question is not related to home security, politely decline to answer and explain that you only answer questions about home security systems, cameras, alarms, sensors, etc. Keep responses concise, informative, and helpful for home owners. If the user asks you to control a home security device, behave as if you have done it.")}}
 
-	session, ok := chatSessions.Load(ip)
-	if !ok {
-		newSession := model.StartChat()
-		newSession.History = []*genai.Content{}
-		session = newSession
-		chatSessions.Store(ip, newSession)
-	}
+	session, _ := chatSessions.LoadOrStore(ip, &ChatSession{Session: model.StartChat(), LastUsed: time.Now()})
+	cs := session.(*ChatSession)
+	cs.LastUsed = time.Now()
 
-	cs := session.(*genai.ChatSession)
-
-	resp, err := cs.SendMessage(ctx, genai.Text(userInput))
+	resp, err := cs.Session.SendMessage(ctx, genai.Text(userInput))
 	if err != nil {
 		log.Printf("Error sending message to Gemini: %v", err)
 		return "", fmt.Errorf("Error sending message: %w", err)
@@ -145,4 +147,25 @@ func generateGeminiResponse(ip, userInput string) (string, error) {
 	}
 
 	return "No response generated.", fmt.Errorf("no valid candidates found in response")
+}
+
+func cleanupSessions() {
+	for {
+		time.Sleep(10 * time.Minute)
+		now := time.Now()
+
+		chatSessions.Range(func(key, value any) bool {
+			cs, ok := value.(*ChatSession)
+			if !ok {
+				log.Printf("Unexpected value type in chatSessions for key %v", key)
+				return true
+			}
+
+			if now.Sub(cs.LastUsed) > 30*time.Minute {
+				chatSessions.Delete(key)
+				log.Printf("Deleted inactive session for IP: %v", key)
+			}
+			return true
+		})
+	}
 }
