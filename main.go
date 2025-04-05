@@ -31,7 +31,6 @@ func main() {
 		AppName: "Home Security Assistant",
 	})
 
-	app.Use(logger.New())
 	allowedOrigins, ok := os.LookupEnv("ORIGIN")
 	if !ok {
 		log.Println("Warning: ORIGIN environment variable not set. CORS might be too permissive.")
@@ -43,6 +42,10 @@ func main() {
 	}))
 
 	app.Use(recover.New())
+
+	app.Use(logger.New(logger.Config{
+		TimeFormat: "02-Jan-2006 03:04:05 PM",
+	}))
 
 	app.Static("/", "./static")
 
