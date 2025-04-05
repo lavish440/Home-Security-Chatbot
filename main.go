@@ -129,18 +129,7 @@ func generateGeminiResponse(ip, userInput string) (string, error) {
 
 	if len(resp.Candidates) > 0 && len(resp.Candidates[0].Content.Parts) > 0 {
 		if text, ok := resp.Candidates[0].Content.Parts[0].(genai.Text); ok {
-			response := string(text)
-
-			cs.History = append(cs.History, &genai.Content{
-				Role:  "user",
-				Parts: []genai.Part{genai.Text(userInput)},
-			})
-			cs.History = append(cs.History, &genai.Content{
-				Role:  "model",
-				Parts: []genai.Part{genai.Text(response)},
-			})
-
-			return response, nil
+			return string(text), nil
 		}
 	}
 
