@@ -64,6 +64,15 @@ func main() {
 		TimeFormat: "02-Jan-2006 03:04:05 PM",
 	}))
 
+	if os.Getenv("ENFORCE_HTTPS") == "true" {
+		app.Use(func(c *fiber.Ctx) error {
+			if c.Get(fiber.HeaderXForwardedProto) == "http" {
+				return c.Redirect(fmt.Sprintf("https://%s%s", c.Hostname(), c.OriginalURL()), fiber.StatusMovedPermanently)
+			}
+			return c.Next()
+		})
+	}
+
 	app.Static("/", "./static")
 
 	app.Post("/api/chat", handleChat)
