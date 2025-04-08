@@ -10,6 +10,7 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -90,6 +91,19 @@ func main() {
 	app.Static("/", "./static")
 
 	app.Post("/api/chat", handleChat)
+
+	if os.Getenv("ENABLE_DEBUG_ENDPOINTS") == "true" {
+		username := os.Getenv("BASIC_AUTH_USER")
+		password := os.Getenv("BASIC_AUTH_PASS")
+
+		app.Get("/api/debug/sessions", basicauth.New(basicauth.Config{
+			Users: map[string]string{
+				username: password,
+			},
+		}), debugSessions)
+	} else {
+		log.Println("Debug endpoints are disabled in production.")
+	}
 
 	go cleanupSessions()
 
@@ -203,4 +217,27 @@ func cleanupSessions() {
 			}
 		}
 	}
+}
+
+func debugSessions(c *fiber.Ctx) error {
+	sessions := make(map[string][]map[string]string)
+
+	chatSessions.Range(func(key, value any) bool {
+		cs := value.(*ChatSession)
+		history := []map[string]string{}
+		for _, msg := range cs.Session.History {
+			for _, part := range msg.Parts {
+				if text, ok := part.(genai.Text); ok {
+					history = append(history, map[string]string{
+						"role": msg.Role,
+						"text": string(text),
+					})
+				}
+			}
+		}
+		sessions[fmt.Sprintf("%v", key)] = history
+		return true
+	})
+
+	return c.JSON(sessions)
 }
