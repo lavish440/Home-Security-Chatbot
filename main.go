@@ -15,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/joho/godotenv"
@@ -91,6 +92,10 @@ func main() {
 	app.Static("/", "./static")
 
 	app.Post("/api/chat", handleChat)
+
+	if os.Getenv("ENABLE_MONITORING") == "true" {
+		app.Get("/metrics", monitor.New())
+	}
 
 	if os.Getenv("ENABLE_DEBUG_ENDPOINTS") == "true" {
 		username := os.Getenv("BASIC_AUTH_USER")
