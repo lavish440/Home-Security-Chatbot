@@ -159,9 +159,14 @@ func generateGeminiResponse(ip, userInput string) (string, error) {
 }
 
 func cleanupSessions() {
-	for {
-		time.Sleep(10 * time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+
+	timeout := 30 * time.Minute
+
+	for range ticker.C {
 		now := time.Now()
+		var keysToDelete []any
 
 		chatSessions.Range(func(key, value any) bool {
 			cs, ok := value.(*ChatSession)
@@ -170,11 +175,18 @@ func cleanupSessions() {
 				return true
 			}
 
-			if now.Sub(cs.LastUsed) > 30*time.Minute {
-				chatSessions.Delete(key)
-				log.Printf("Deleted inactive session for IP: %v", key)
+			if now.Sub(cs.LastUsed) > timeout {
+				keysToDelete = append(keysToDelete, key)
 			}
 			return true
 		})
+
+		for _, key := range keysToDelete {
+			if actualValue, loaded := chatSessions.LoadAndDelete(key); loaded {
+				if _, ok := actualValue.(*ChatSession); ok {
+					log.Printf("Deleted inactive session for IP: %v", key)
+				}
+			}
+		}
 	}
 }
