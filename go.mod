@@ -1,6 +1,6 @@
 module github.com/lavish440/Home-Security-Chatbot
 
-go 1.24.1
+go 1.24.0
 
 require (
 	github.com/goccy/go-json v0.10.5
