@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/goccy/go-json v0.10.5
-	github.com/gofiber/fiber/v2 v2.52.6
+	github.com/gofiber/fiber/v2 v2.52.7
 	github.com/google/generative-ai-go v0.19.0
 	github.com/joho/godotenv v1.5.1
 	google.golang.org/api v0.228.0
