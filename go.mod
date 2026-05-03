@@ -3,7 +3,6 @@ module github.com/lavish440/Home-Security-Chatbot
 go 1.25.0
 
 require (
-	github.com/goccy/go-json v0.10.6
 	github.com/gofiber/fiber/v2 v2.52.13
 	github.com/google/generative-ai-go v0.20.1
 	github.com/joho/godotenv v1.5.1
@@ -12,7 +11,7 @@ require (
 
 require (
 	cloud.google.com/go v0.123.0 // indirect
-	cloud.google.com/go/ai v0.19.0 // indirect
+	cloud.google.com/go/ai v0.12.0 // indirect
 	cloud.google.com/go/auth v0.20.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
@@ -32,7 +31,6 @@ require (
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/tinylib/msgp v1.6.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.70.0 // indirect
