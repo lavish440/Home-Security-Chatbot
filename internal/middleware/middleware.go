@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/monitor"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/contrib/v3/monitor"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/compress"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/limiter"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 
 	"github.com/lavish440/Home-Security-Chatbot/internal/models"
 )
@@ -18,8 +18,8 @@ import (
 func Register(app *fiber.App, cfg *models.Config) {
 	// CORS
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: cfg.Origin,
-		AllowMethods: "GET,POST",
+		AllowOrigins: []string{cfg.Origin},
+		AllowMethods: []string{fiber.MethodGet, fiber.MethodPost},
 	}))
 
 	// Compression
@@ -43,10 +43,7 @@ func Register(app *fiber.App, cfg *models.Config) {
 	app.Use(limiter.New(limiter.Config{
 		Max:        1000,
 		Expiration: 30 * time.Minute,
-		KeyGenerator: func(c *fiber.Ctx) string {
-			return c.IP()
-		},
-		LimitReached: func(c *fiber.Ctx) error {
+		LimitReached: func(c fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
 				"error": "Too many requests, please try again later.",
 			})
@@ -55,11 +52,10 @@ func Register(app *fiber.App, cfg *models.Config) {
 
 	// HTTPS enforcement (behind proxy)
 	if cfg.EnforceHTTPS {
-		app.Use(func(c *fiber.Ctx) error {
+		app.Use(func(c fiber.Ctx) error {
 			if c.Get(fiber.HeaderXForwardedProto) == "http" {
-				return c.Redirect(
+				return c.Redirect().Status(fiber.StatusMovedPermanently).To(
 					fmt.Sprintf("https://%s%s", c.Hostname(), c.OriginalURL()),
-					fiber.StatusMovedPermanently,
 				)
 			}
 			return c.Next()

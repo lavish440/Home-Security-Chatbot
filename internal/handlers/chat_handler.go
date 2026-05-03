@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 
 	"github.com/lavish440/Home-Security-Chatbot/internal/models"
 	"github.com/lavish440/Home-Security-Chatbot/internal/services"
@@ -18,9 +18,9 @@ func NewChatHandler(ai *services.AIService, sessions *services.SessionService) *
 	return &ChatHandler{AI: ai, Sessions: sessions}
 }
 
-func (h *ChatHandler) Handle(c *fiber.Ctx) error {
+func (h *ChatHandler) Handle(c fiber.Ctx) error {
 	var req models.ChatMessageRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.Bind().JSON(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
 	}
 

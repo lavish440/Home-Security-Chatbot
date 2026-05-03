@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/static"
 
 	"github.com/lavish440/Home-Security-Chatbot/internal/handlers"
 	"github.com/lavish440/Home-Security-Chatbot/internal/middleware"
@@ -25,7 +26,7 @@ func New(ctx context.Context, cfg *models.Config) (*fiber.App, error) {
 	chatHandler := handlers.NewChatHandler(aiService, sessionService)
 	debugHandler := handlers.NewDebugHandler(sessionService)
 
-	app.Static("/", "./static")
+	app.Use("/", static.New("./static"))
 	app.Post("/api/chat", chatHandler.Handle)
 
 	middleware.Register(app, cfg)
